@@ -16,17 +16,18 @@ API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-test = ["кнопка 1", "кнопка 2", "кнопка 3", "кнопка 4"]
+@dp.message(CommandStart())
+async def start(message: Message):
+    await message.answer(f'Здарова! {message.from_user.first_name}', reply_markup=await test_keyboard())
 
+test = ["кнопка 1", "кнопка 2", "кнопка 3", "кнопка 4"]
 async def test_keyboard():
     keyboard = InlineKeyboardBuilder()
     for key in test:
         keyboard.add(InlineKeyboardButton(text=key, callback_data=key))
     return keyboard.adjust(2).as_markup()
 
-@dp.message(CommandStart())
-async def start(message: Message):
-    await message.answer(f'Приветики, {message.from_user.first_name}', reply_markup=await test_keyboard())
+
 
 async def main():
     await dp.start_polling(bot)
@@ -34,6 +35,14 @@ async def main():
 if __name__ == '__main__':
     asyncio.run(main())
 
+
+#keyboard.add(InlineKeyboardButton(text=key, url='<https://www.youtube.com/watch?v=HfaIcB4Ogxk>'))
+""""
+@dp.callback_query(F.data == 'news')
+async def news(callback: CallbackQuery):
+   await callback.answer("Новости подгружаются", show_alert=True)
+   await callback.message.edit_text('Вот свежие новости!', reply_markup=await test_keyboard())
+"""
 
 """ 
 inline_keyboard_test = InlineKeyboardMarkup(inline_keyboard=[
