@@ -58,15 +58,27 @@ async def extra(message: Message):
 
 @dp.callback_query(lambda c: c.data == 'news')
 async def news(callback_query: types.CallbackQuery):
-    await callback_query.message.answer('Вот ваши новости!')
+    await callback_query.message.answer(f'Вот ваши новости! Открыть эту ссылку: https://www.youtube.com/news', reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            [InlineKeyboardButton(text='Open', url='https://www.youtube.com/news')]
+        ]))
 
 @dp.callback_query(lambda c: c.data == 'music')
 async def music(callback_query: types.CallbackQuery):
-    await callback_query.message.answer('Вот ваша музыка!')
+    await callback_query.message.answer(f'Вот ваша музыка! Открыть эту ссылку: https://www.youtube.com/music', reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            [InlineKeyboardButton(text='Open', url='https://www.youtube.com/music')]
+        ]))
 
 @dp.callback_query(lambda c: c.data == 'video')
 async def video(callback_query: types.CallbackQuery):
-    await callback_query.message.answer('Вот ваше видео!')
+    await callback_query.message.answer(f'Вот ваше видео! Открыть эту ссылку: https://www.youtube.com/video', reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            [InlineKeyboardButton(text='Open', url='https://www.youtube.com/video')]
+        ]))
 
 @dp.callback_query(lambda c: c.data == 'draw')
 async def draw(callback_query: types.CallbackQuery):
@@ -75,6 +87,10 @@ async def draw(callback_query: types.CallbackQuery):
 @dp.callback_query(lambda c: c.data == 'chat')
 async def chat(callback_query: types.CallbackQuery):
     await callback_query.message.answer('Давайте поболтаем!')
+
+@dp.callback_query(lambda c: c.data == 'cancel')
+async def process_callback_cancel(callback_query: types.CallbackQuery):
+    await callback_query.message.answer('Вы отменили действие')
 
 async def main():
     await dp.start_polling(bot)
