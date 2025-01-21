@@ -82,11 +82,19 @@ async def video(callback_query: types.CallbackQuery):
 
 @dp.callback_query(lambda c: c.data == 'draw')
 async def draw(callback_query: types.CallbackQuery):
-    await callback_query.message.answer('Давайте порисуем!')
+    await callback_query.message.answer(f'Давайте порисуем! Открыть эту ссылку: https://leonardo.ai', reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            [InlineKeyboardButton(text='Open', url='https://leonardo.ai')]
+        ]))
 
 @dp.callback_query(lambda c: c.data == 'chat')
 async def chat(callback_query: types.CallbackQuery):
-    await callback_query.message.answer('Давайте поболтаем!')
+    await callback_query.message.answer(f'Давайте поболтаем! Открыть эту ссылку: https://chat.openai.com', reply_markup=InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            [InlineKeyboardButton(text='Open', url='https://chat.openai.com')]
+        ]))
 
 @dp.callback_query(lambda c: c.data == 'cancel')
 async def process_callback_cancel(callback_query: types.CallbackQuery):
