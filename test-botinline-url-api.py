@@ -1,20 +1,17 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, FSInputFile, CallbackQuery
-import random
-from gtts import gTTS
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
 import os
 from dotenv import load_dotenv
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 import aiohttp
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 
 API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
-API_LINK = os.getenv('API_LINK')
+API_LINK = os.getenv('API_LINK')  # Убедитесь, что здесь правильный URL с вашим ключом
 
 # Проверка, что переменные окружения корректно загружены
 if not API_TOKEN or not API_LINK:
@@ -24,7 +21,7 @@ bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
 urls = {
-    "кнопка 1": "https://example.com/link1",
+    "кнопка 1": "https://www.youtube.com/news",
     "кнопка 2": "https://example.com/link2",
     "кнопка 3": "https://example.com/link3",
     "кнопка 4": "https://example.com/link4"
@@ -60,11 +57,11 @@ async def process_callback_ok(callback_query: CallbackQuery):
 @dp.callback_query(lambda c: c.data == 'go_to_api')
 async def process_callback_go_to_api(callback_query: CallbackQuery):
     async with aiohttp.ClientSession() as session:
-        async with session.get(API_LINK, headers={"Authorization": f"Bearer {API_TOKEN}"}) as response:
+        async with session.get(API_LINK) as response:  # Обратите внимание, что заголовок авторизации не нужен для этого URL
             if response.status == 200:
                 await callback_query.message.answer('Вызов API выполнен успешно')
             else:
-                await callback_query.message.answer('Ошибка при вызове API')
+                await callback_query.message.answer(f'Ошибка при вызове API: {response.status}')
 
 async def main():
     await dp.start_polling(bot)
