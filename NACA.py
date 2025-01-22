@@ -5,14 +5,19 @@ from aiogram.types import Message
 import random
 import requests
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
+# Загрузка переменных окружения из файла .env
+load_dotenv()
+API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
+NASA_API_KEY = os.getenv('NASA_API_KEY')
 
-from config import TOKEN, NASA_API_KEY
-
-
-bot = Bot(token=TOKEN)
+# Проверка, что переменные окружения корректно загружены
+if not API_TOKEN or not NASA_API_KEY:
+    raise ValueError("API_TOKEN и API_LINK должны быть заданы в файле .env")
+bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
-
 
 def get_random_apod():
    end_date = datetime.now()
@@ -31,14 +36,11 @@ async def random_apod(message: Message):
    apod = get_random_apod()
    photo_url = apod['url']
    title = apod['title']
-
-
    await message.answer_photo(photo=photo_url, caption=f"{title}")
 
 
 async def main():
    await dp.start_polling(bot)
-
 
 if __name__ == '__main__':
    asyncio.run(main())
