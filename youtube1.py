@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import logging
 import asyncio
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message
+from aiogram.filters import CommandStart
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from googleapiclient.discovery import build
 
 # Загрузка переменных окружения из файла .env
@@ -23,15 +23,28 @@ dp = Dispatcher()
 # Инициализация YouTube API клиента
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
-# Пример хендлера с использованием CommandStart
+# Обработчик команды /start
 @dp.message(CommandStart())
 async def start(message: Message):
-    await message.answer("Привет! Отправьте мне текстовый запрос и получите ссылку на YouTube-видео (/look ...запрос...)")
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Поиск ссылок YouTube", callback_data="search_youtube")]
+        ]
+    )
+    await message.answer(
+        "Привет! Нажмите кнопку ниже, чтобы выполнить поиск YouTube видео по текстовому запросу.",
+        reply_markup=keyboard
+    )
 
-# Прописываем хендлер для команды /look
-@dp.message(Command(commands=["look"]))
-async def look_command(message: Message):
-    query = message.text[len("/look "):].strip()
+# Обработчик нажатия на инлайн-кнопку "Поиск ссылок YouTube"
+@dp.callback_query(lambda callback_query: callback_query.data == "search_youtube")
+async def search_youtube(callback_query: CallbackQuery):
+    await callback_query.message.answer("Введите текстовый запрос для поиска YouTube видео:")
+
+# Обработка текстового запроса после нажатия инлайн-кнопки
+@dp.message(lambda message: message.text and message.chat.type == 'private')
+async def process_text_query(message: Message):
+    query = message.text.strip()
     if not query:
         await message.reply("Пожалуйста, предоставьте текстовое описание для поиска.")
         logging.info("Запрос пустой.")
@@ -63,7 +76,8 @@ async def look_command(message: Message):
 
 async def main():
     dp.message.register(start, CommandStart())
-    dp.message.register(look_command, Command(commands=["look"]))
+    dp.callback_query.register(search_youtube, lambda callback_query: callback_query.data == "search_youtube")
+    dp.message.register(process_text_query, lambda message: message.text and message.chat.type == 'private')
 
     await dp.start_polling(bot)
 
