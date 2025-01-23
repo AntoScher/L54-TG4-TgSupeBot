@@ -13,7 +13,7 @@ load_dotenv()
 
 API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
 API_KEY_NEWS = os.getenv('API_KEY_NEWS')
-# Проверка, что переменные окружения корректно загружены
+# Проверка, что переменные окружения коррAPI_KEY_NEWSектно загружены
 if not API_TOKEN or not API_KEY_NEWS:
     raise ValueError("API_TOKEN и API_KEY_NEWS должны быть заданы в файле .env")
 
