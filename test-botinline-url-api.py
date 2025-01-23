@@ -1,67 +1,121 @@
 import asyncio
-from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart, Command
+import requests
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 import os
 from dotenv import load_dotenv
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-import aiohttp
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 
 API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
-API_LINK = os.getenv('API_LINK')  # Убедитесь, что здесь правильный URL с вашим ключом
+API_KEY_NEWS = os.getenv('API_KEY_NEWS')
 
 # Проверка, что переменные окружения корректно загружены
-if not API_TOKEN or not API_LINK:
-    raise ValueError("API_TOKEN и API_LINK должны быть заданы в файле .env")
+if not API_TOKEN or not API_KEY_NEWS:
+    raise ValueError("API_TOKEN и API_KEY_NEWS должны быть заданы в файле .env")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
 urls = {
-    "кнопка 1": "https://www.youtube.com/news",
-    "кнопка 2": "https://example.com/link2",
+    "кнопка 1": "https://dzen.ru/news/?issue_tld=ru",
+    "кнопка 2": "https://www.youtube.com/news",
     "кнопка 3": "https://example.com/link3",
-    "кнопка 4": "https://example.com/link4"
+    #"кнопка 4": "https://example.com/link4"
 }
 
 async def test_keyboard():
     keyboard = InlineKeyboardBuilder()
-    for key, url in urls.items():
+    for key in urls.keys():
         keyboard.add(InlineKeyboardButton(text=key, callback_data=key))
-    return keyboard.adjust(2).as_markup()
+    return keyboard.adjust(3).as_markup()
 
 @dp.message(CommandStart())
 async def start(message: Message):
-    await message.answer(f'Здарова! {message.from_user.first_name}', reply_markup=await test_keyboard())
+    await message.answer(f'Привет! {message.from_user.first_name}', reply_markup=await test_keyboard())
 
 @dp.callback_query(lambda c: c.data in urls.keys())
 async def process_callback_button(callback_query: CallbackQuery):
     selected_url = urls[callback_query.data]
     keyboard = InlineKeyboardBuilder()
-    keyboard.add(InlineKeyboardButton(text="Cancel", callback_data="cancel"))
-    keyboard.add(InlineKeyboardButton(text="OK", callback_data="ok"))
-    keyboard.add(InlineKeyboardButton(text="Go to API", callback_data="go_to_api"))
-    await callback_query.message.answer(f'Открыть эту ссылку: {selected_url}?', reply_markup=keyboard.as_markup())
+    keyboard.add(InlineKeyboardButton(text="Go to hot video", callback_data="get_video"))
+    await callback_query.message.answer(f"Открой эту ссылку: {selected_url}", reply_markup=keyboard.as_markup())
 
-@dp.callback_query(lambda c: c.data == 'cancel')
-async def process_callback_cancel(callback_query: CallbackQuery):
-    await callback_query.message.answer('Вы нажали Cancel')
+def get_news():
+    url = 'https://newsapi.org/v2/top-headlines'
+    params = {
+        'country': 'us',
+        'apiKey': API_KEY_NEWS,
+        'category': 'general',
+        'pageSize': 5
+    }
+    response = requests.get(url, params=params)
+    print(f"Response status code: {response.status_code}")
+    if response.status_code != 200:
+        print(f"Error: {response.text}")
+        return ["Не удалось получить новости."]
 
-@dp.callback_query(lambda c: c.data == 'ok')
-async def process_callback_ok(callback_query: CallbackQuery):
-    await callback_query.message.answer('Вы нажали OK')
+    data = response.json()
+    news = []
+    for article in data.get('articles', []):
+        title = article.get('title', 'Без названия')
+        link = article.get('url', '')
+        news.append(f"{title}\n{link}")
+    return news
 
-@dp.callback_query(lambda c: c.data == 'go_to_api')
-async def process_callback_go_to_api(callback_query: CallbackQuery):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(API_LINK) as response:  # Обратите внимание, что заголовок авторизации не нужен для этого URL
-            if response.status == 200:
-                await callback_query.message.answer('Вызов API выполнен успешно')
-            else:
-                await callback_query.message.answer(f'Ошибка при вызове API: {response.status}')
+@dp.callback_query(lambda c: c.data == "get_news")
+async def process_get_news(callback_query: CallbackQuery):
+    await callback_query.answer()
+    news_items = get_news()
+    for item in news_items:
+        await bot.send_message(callback_query.from_user.id, item)
+
+
+@dp.callback_query(lambda c: c.data in urls.keys())
+async def process_callback_button(callback_query: CallbackQuery):
+    selected_url = urls[callback_query.data]
+    keyboard = InlineKeyboardBuilder()
+    keyboard.add(InlineKeyboardButton(text="Go to hot news", callback_data="get_news"))
+    await callback_query.message.answer(f"Открой эту ссылку: {selected_url}", reply_markup=keyboard.as_markup())
+
+def get_news():
+    url = 'https://newsapi.org/v2/top-headlines'
+    params = {
+        'country': 'us',
+        'apiKey': API_KEY_NEWS,
+        'category': 'general',
+        'pageSize': 5
+    }
+    response = requests.get(url, params=params)
+    print(f"Response status code: {response.status_code}")
+    if response.status_code != 200:
+        print(f"Error: {response.text}")
+        return ["Не удалось получить новости."]
+
+    data = response.json()
+    news = []
+    for article in data.get('articles', []):
+        title = article.get('title', 'Без названия')
+        link = article.get('url', '')
+        news.append(f"{title}\n{link}")
+    return news
+
+@dp.callback_query(lambda c: c.data == "get_news")
+async def process_get_news(callback_query: CallbackQuery):
+    await callback_query.answer()
+    news_items = get_news()
+    for item in news_items:
+        await bot.send_message(callback_query.from_user.id, item)
+
+
+
+
+
+
+
 
 async def main():
     await dp.start_polling(bot)
