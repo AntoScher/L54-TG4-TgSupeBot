@@ -160,5 +160,3 @@ cython_debug/
 .idea/
 .env/
 *.db
-news_bot.py
-news_bot.py

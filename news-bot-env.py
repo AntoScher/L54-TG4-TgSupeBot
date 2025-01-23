@@ -5,24 +5,28 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Router
+import os
+from dotenv import load_dotenv
 
-# Замените 'YOUR_TOKEN' и 'YOUR_API_KEY' на свои значения
-API_TOKEN = '6712048539:AAGREql6w2v47fLYsL0o7eUZgb6fQmW-H3A'
+# Загрузка переменных окружения из файла .env
+load_dotenv()
+
+API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
+API_KEY_NEWS = os.getenv('API_KEY_NEWS')
+# Проверка, что переменные окружения корректно загружены
+if not API_TOKEN or not API_KEY_NEWS:
+    raise ValueError("API_TOKEN и API_KEY_NEWS должны быть заданы в файле .env")
+
 bot = Bot(token=API_TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 router = Router()
 
-#https://newsapi.org/v2/top-headlines?country=us&apiKey={api_key},
-#где api_key = os.getenv('API_KEY2'),
-#где  API_KEY2=03133c1e0b5f481f84c7aaad321b2711
-
-
 def get_news():
     url = 'https://newsapi.org/v2/top-headlines?'
     params = {
         'country': 'us',
-        'apiKey': '03133c1e0b5f481f84c7aaad321b2711',
+        'apiKey':API_KEY_NEWS,
         'category': 'general',  # Попробуйте добавить категорию
         'pageSize': 5  # Ограничим количество возвращаемых новостей
     }
