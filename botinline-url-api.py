@@ -9,7 +9,6 @@ import os
 from dotenv import load_dotenv
 import logging
 
-
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
@@ -79,30 +78,8 @@ async def process_get_news(callback_query: CallbackQuery):
         await bot.send_message(callback_query.from_user.id, item)
 
 
-
-
-
-
-
-
-
-
-
 # Инициализация YouTube API клиента
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
-
-# Обработчик команды /start
-"""@dp.message(CommandStart())
-async def start(message: Message):
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Поиск ссылок YouTube", callback_data="search_youtube")]
-        ]
-    )
-    await message.answer(
-        "Привет! Нажмите кнопку ниже, чтобы выполнить поиск YouTube видео по текстовому запросу.",
-        reply_markup=keyboard
-    )"""
 
 # Обработчик нажатия на инлайн-кнопку "Поиск ссылок YouTube"
 @dp.callback_query(lambda callback_query: callback_query.data == "search_youtube")
