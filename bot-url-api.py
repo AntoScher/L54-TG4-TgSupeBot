@@ -26,9 +26,9 @@ bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
 urls = {
-    "кнопка 1": "https://dzen.ru/news/?issue_tld=ru",
-    "кнопка 2": "https://www.youtube.com/news",
-    "кнопка 3": "https://example.com/link3",
+    "новости": "https://dzen.ru/news/?issue_tld=ru",
+    "видео": "https://www.youtube.com/news",
+    "фото": "https://example.com/link3",
 }
 
 async def test_keyboard():
